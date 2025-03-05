@@ -1,0 +1,15 @@
+{
+  "name": "discord-bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "https://github.com/holycrap888/discord-bot.git",
+  "author": "holycrap888",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.18.0",
+    "mongodb": "^6.14.1"
+  },
+  "scripts": {
+    "start": "node deploy-commands.js && node index.js"
+  }
+}
