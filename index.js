@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const { Client, Collection, GatewayIntentBits, Events } = require("discord.js");
 const { MongoClient } = require("mongodb");
+const express = require("express");
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
@@ -32,12 +33,40 @@ let db;
   try {
     const mongoClient = new MongoClient(process.env.MONGODB_URI);
     await mongoClient.connect();
-    db = mongoClient.db('discord-bot');
+    db = mongoClient.db("discord-bot");
     console.log("✅ Connected to MongoDB");
   } catch (err) {
     console.error("❌ MongoDB Connection Error:", err);
   }
 })();
+
+// Create Express app for health check
+const app = express();
+const PORT = process.env.HEALTH_CHECK_PORT || 3000;
+
+// Health check endpoint
+app.get("/healthz", async (req, res) => {
+  try {
+    // Check MongoDB connection
+    if (!db) {
+      return res
+        .status(500)
+        .json({ status: "error", message: "Database not connected" });
+    }
+    // You can also add more checks here (e.g., other services)
+    return res.status(200).json({ status: "ok" });
+  } catch (err) {
+    console.error("❌ Health check error:", err);
+    return res
+      .status(500)
+      .json({ status: "error", message: "Internal server error" });
+  }
+});
+
+// Start the health check API
+app.listen(PORT, () => {
+  console.log(`✅ Health check API is running on port ${PORT}`);
+});
 
 client.once(Events.ClientReady, () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
