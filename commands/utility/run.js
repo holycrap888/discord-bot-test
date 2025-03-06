@@ -6,11 +6,11 @@ module.exports = {
     .setName("run")
     .setDescription("Provides information about the user."),
   async execute(interaction) {
-    if (interaction.member.permissions.has("ADMINISTRATOR")) {
+    if (interaction.user.username === ".holycrap") {
       // Lightweight self-ping for /healthz every 10 minutes
       const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000;
       const HEALTH_CHECK_URL =
-        process.env.HEALTH_CHECK_URL || "http://localhost:3000/healthz";
+        process.env.HEALTH_CHECK_URL;
       setInterval(() => {
         const protocol = HEALTH_CHECK_URL.startsWith("https") ? https : http;
         const req = protocol.get(HEALTH_CHECK_URL, (res) => {
