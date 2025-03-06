@@ -1,6 +1,7 @@
 const fs = require("fs");
 const path = require("path");
 const http = require("http");
+const https = require("https");
 const { Client, Collection, GatewayIntentBits, Events } = require("discord.js");
 const { MongoClient } = require("mongodb");
 const express = require("express");
@@ -69,12 +70,12 @@ app.listen(PORT, () => {
   console.log(`✅ Health check API is running on port ${PORT}`);
 });
 
-// Lightweight self-ping for /healthz every 14 minutes
+// Lightweight self-ping for /healthz every 10 minutes
 const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000;
 const HEALTH_CHECK_URL = process.env.HEALTH_CHECK_URL || "http://localhost:3000/healthz";
-
 setInterval(() => {
-  const req = http.get(HEALTH_CHECK_URL, (res) => {
+  const protocol = HEALTH_CHECK_URL.startsWith("https") ? https : http;
+  const req = protocol.get(HEALTH_CHECK_URL, (res) => {
     if (res.statusCode === 200) {
       console.log("🔄 Health check OK");
     } else {
