@@ -1,12 +1,15 @@
 const fs = require("fs");
 const path = require("path");
+const http = require("http");
 const { Client, Collection, GatewayIntentBits, Events } = require("discord.js");
 const { MongoClient } = require("mongodb");
 const express = require("express");
 
+// Initialize Discord client
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 client.commands = new Collection();
 
+// Load commands
 const foldersPath = path.join(__dirname, "commands");
 const commandFolders = fs.readdirSync(foldersPath);
 
@@ -47,13 +50,11 @@ const PORT = process.env.HEALTH_CHECK_PORT || 3000;
 // Health check endpoint
 app.get("/healthz", async (req, res) => {
   try {
-    // Check MongoDB connection
     if (!db) {
       return res
         .status(500)
         .json({ status: "error", message: "Database not connected" });
     }
-    // You can also add more checks here (e.g., other services)
     return res.status(200).json({ status: "ok" });
   } catch (err) {
     console.error("❌ Health check error:", err);
@@ -68,6 +69,27 @@ app.listen(PORT, () => {
   console.log(`✅ Health check API is running on port ${PORT}`);
 });
 
+// Lightweight self-ping for /healthz every 14 minutes
+const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000;
+const HEALTH_CHECK_URL = process.env.HEALTH_CHECK_URL || "http://localhost:3000/healthz";
+
+setInterval(() => {
+  const req = http.get(HEALTH_CHECK_URL, (res) => {
+    if (res.statusCode === 200) {
+      console.log("🔄 Health check OK");
+    } else {
+      console.error(`⚠️ Health check failed: ${res.statusCode}`);
+    }
+  });
+
+  req.on("error", (err) => {
+    console.error("❌ Health check request error:", err.message);
+  });
+
+  req.end();
+}, HEALTH_CHECK_INTERVAL);
+
+// Discord bot event handlers
 client.once(Events.ClientReady, () => {
   console.log(`✅ Logged in as ${client.user.tag}`);
 });
@@ -92,4 +114,5 @@ client.on(Events.InteractionCreate, async (interaction) => {
   }
 });
 
+// Login to Discord
 client.login(process.env.DISCORD_TOKEN);
