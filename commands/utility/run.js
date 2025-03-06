@@ -9,8 +9,11 @@ module.exports = {
     if (interaction.user.username === ".holycrap") {
       // Lightweight self-ping for /healthz every 10 minutes
       const HEALTH_CHECK_INTERVAL = 10 * 60 * 1000;
-      const HEALTH_CHECK_URL =
-        process.env.HEALTH_CHECK_URL;
+      const HEALTH_CHECK_URL = process.env.HEALTH_CHECK_URL;
+      await interaction.reply({
+        content:
+          "🔄 Starting health check. I will ping myself every 10 minutes.",
+      });
       setInterval(() => {
         const protocol = HEALTH_CHECK_URL.startsWith("https") ? https : http;
         const req = protocol.get(HEALTH_CHECK_URL, (res) => {
@@ -27,10 +30,11 @@ module.exports = {
 
         req.end();
       }, HEALTH_CHECK_INTERVAL);
+    } else {
+      await interaction.reply({
+        content:
+          "You do not have the required permissions to run this command.",
+      });
     }
-    await interaction.reply({
-      content: "You do not have the required permissions to run this command.",
-      ephemeral: true,
-    });
   },
 };
